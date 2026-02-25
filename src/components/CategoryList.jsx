@@ -7,6 +7,8 @@ function CategoryList() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [deleteModal, setDeleteModal] = useState({ show: false, categoryId: null, categoryName: '' });
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     loadCategories();
@@ -34,6 +36,31 @@ function CategoryList() {
   const handleEditCategory = (category) => {
     setSelectedCategory(category);
     setShowForm(true);
+  };
+
+  const handleDeleteClick = (category) => {
+    setDeleteModal({
+      show: true,
+      categoryId: category.id,
+      categoryName: category.name
+    });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (deleteModal.categoryId === null) return;
+
+    setDeleting(true);
+    try {
+      await categoryService.delete(deleteModal.categoryId);
+      setCategories(categories.filter(c => c.id !== deleteModal.categoryId));
+      setDeleteModal({ show: false, categoryId: null, categoryName: '' });
+      alert('Categoría eliminada exitosamente');
+    } catch (error) {
+      console.error('Error al eliminar categoría:', error);
+      alert('Error al eliminar la categoría');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const handleFormSuccess = () => {
@@ -95,7 +122,7 @@ function CategoryList() {
                 onClick={handleNewCategory}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
               >
-                ➕ Crear Categoría
+                Crear Categoría
               </button>
             </div>
           ) : (
@@ -135,6 +162,12 @@ function CategoryList() {
                         >
                           ✏️ Editar
                         </button>
+                        <button
+                          onClick={() => handleDeleteClick(category)}
+                          className="inline-flex items-center px-3 py-1 text-sm font-medium text-red-600 bg-red-100 rounded-lg hover:bg-red-200 transition-colors"
+                        >
+                          🗑️ Eliminar
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -143,7 +176,50 @@ function CategoryList() {
             </div>
           )}
         </div>
+
+        <div className="bg-gray-100 px-8 py-4 border-t border-gray-200">
+          <p className="text-sm text-gray-600">
+            <span className="font-semibold text-gray-800">{categories.length}</span> categoría{categories.length !== 1 ? 's' : ''} registrada{categories.length !== 1 ? 's' : ''}
+          </p>
+        </div>
       </div>
+
+      {/* Modal de confirmación de eliminación */}
+      {deleteModal.show && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full overflow-hidden animate-in">
+            <div className="bg-red-50 border-b border-red-200 px-6 py-4">
+              <h3 className="text-lg font-bold text-red-900">⚠️ Confirmar eliminación</h3>
+            </div>
+            
+            <div className="px-6 py-4">
+              <p className="text-gray-700 mb-4">
+                ¿Estás seguro de que deseas eliminar la categoría <span className="font-semibold text-gray-900">"{deleteModal.categoryName}"</span>?
+              </p>
+              <p className="text-sm text-gray-500">
+                Esta acción no se puede deshacer.
+              </p>
+            </div>
+
+            <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3 border-t border-gray-200">
+              <button
+                onClick={() => setDeleteModal({ show: false, categoryId: null, categoryName: '' })}
+                disabled={deleting}
+                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={deleting}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {deleting ? 'Eliminando...' : 'Eliminar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
