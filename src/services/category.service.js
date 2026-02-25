@@ -9,4 +9,14 @@ export const categoryService = {
     }
     return await response.json();
   },
+  async create(categoryData) {
+    const response = await fetch(`${API_URL}/categories`, {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(categoryData)
+    });
+    return await response.json();
+  }
 };
