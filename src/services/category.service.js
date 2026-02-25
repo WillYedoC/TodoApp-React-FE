@@ -18,5 +18,15 @@ export const categoryService = {
       body: JSON.stringify(categoryData)
     });
     return await response.json();
+  },
+  async update(id, categoryData) {
+    const response = await fetch(`${API_URL}/categories/${id}`, {
+      method: 'PUT',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(categoryData)
+    });
+    return await response.json();
   }
 };
