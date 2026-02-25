@@ -1,11 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { categoryService } from '../services/category.service';
 
-function CategoryForm({ onSuccess, onCancel }) {
-  const [formData, setFormData] = useState({ name: '' });
+function CategoryForm({ category, onSuccess, onCancel }) {
+  const [formData, setFormData] = useState({
+    name: ''
+  });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [touchedFields, setTouchedFields] = useState({});
+
+  useEffect(() => {
+    if (category) {
+      setFormData({
+        name: category.name || ''});
+    }
+  }, [category]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,12 +40,21 @@ function CategoryForm({ onSuccess, onCancel }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
+
+    if (!validate()) {
+      return;
+    }
 
     setLoading(true);
+
     try {
-      await categoryService.create(formData);
-      alert('Categoría creada exitosamente');
+      if (category) {
+        await categoryService.update(category.id, formData);
+        alert('Categoría actualizada exitosamente');
+      } else {
+        await categoryService.create(formData);
+        alert('Categoría creada exitosamente');
+      }
       onSuccess();
     } catch (error) {
       console.error('Error al guardar categoría:', error);
@@ -50,17 +68,19 @@ function CategoryForm({ onSuccess, onCancel }) {
     <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg border border-gray-200 overflow-hidden">
       <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-8 py-6">
         <h3 className="text-2xl font-bold text-white flex items-center gap-2">
-          Nueva Categoría
+          {category ? ' Editar Categoría' : 'Nueva Categoría'}
         </h3>
         <p className="text-blue-100 text-sm mt-2">
-          Crea una nueva categoría para organizar tus tareas
+          {category 
+            ? 'Actualiza los detalles de tu categoría'
+            : 'Crea una nueva categoría para organizar tus tareas'
+          }
         </p>
       </div>
 
       {/* Formulario */}
       <form onSubmit={handleSubmit} className="p-8">
         <div className="space-y-6">
-          {/* Campo Nombre */}
           <div>
             <label className="block text-sm font-bold text-gray-800 mb-2 flex items-center gap-2">
                Nombre
@@ -117,7 +137,7 @@ function CategoryForm({ onSuccess, onCancel }) {
               </>
             ) : (
               <>
-                Crear
+                 {category ? 'Actualizar' : 'Crear'}
               </>
             )}
           </button>

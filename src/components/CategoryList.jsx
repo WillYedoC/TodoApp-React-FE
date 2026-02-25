@@ -31,6 +31,11 @@ function CategoryList() {
     setShowForm(true);
   };
 
+  const handleEditCategory = (category) => {
+    setSelectedCategory(category);
+    setShowForm(true);
+  };
+
   const handleFormSuccess = () => {
     loadCategories();
     setShowForm(false);
@@ -58,6 +63,7 @@ function CategoryList() {
       {/* Formulario */}
       {showForm && (
         <CategoryForm
+          category={selectedCategory}
           onSuccess={handleFormSuccess}
           onCancel={handleFormCancel}
         />
@@ -103,6 +109,9 @@ function CategoryList() {
                     <th className="px-6 py-4 text-left text-xs font-bold text-blue-900 uppercase tracking-wider">
                       Nombre
                     </th>
+                    <th className="px-6 py-4 text-right text-xs font-bold text-blue-900 uppercase tracking-wider">
+                      Acciones
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -118,6 +127,14 @@ function CategoryList() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 group-hover:text-blue-600 transition-colors">
                         ✓ {category.name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right space-x-2">
+                        <button
+                          onClick={() => handleEditCategory(category)}
+                          className="inline-flex items-center px-3 py-1 text-sm font-medium text-blue-600 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors"
+                        >
+                          ✏️ Editar
+                        </button>
                       </td>
                     </tr>
                   ))}
