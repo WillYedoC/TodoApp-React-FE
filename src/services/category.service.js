@@ -38,5 +38,14 @@ export const categoryService = {
       }
     });
     return await response.json();
+  },
+  async getOne(id) {
+    const response = await fetch(`${API_URL}/categories/${id}`, {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+    return await response.json();
   }
 };

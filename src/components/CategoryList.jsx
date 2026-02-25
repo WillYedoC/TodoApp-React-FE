@@ -6,6 +6,7 @@ function CategoryList() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [showCategory,setShowCategory] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [deleteModal, setDeleteModal] = useState({ show: false, categoryId: null, categoryName: '' });
   const [deleting, setDeleting] = useState(false);
@@ -32,7 +33,10 @@ function CategoryList() {
     setSelectedCategory(null);
     setShowForm(true);
   };
-
+  const handleShowCategory = (category) => {
+    setSelectedCategory(category);
+    setShowCategory(true);
+  };
   const handleEditCategory = (category) => {
     setSelectedCategory(category);
     setShowForm(true);
@@ -157,6 +161,12 @@ function CategoryList() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right space-x-2">
                         <button
+                          onClick={() => handleShowCategory(category)}
+                          className="inline-flex items-center px-3 py-1 text-sm font-medium text-blue-600 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors"
+                        >
+                          👁️ Ver
+                        </button>
+                        <button
                           onClick={() => handleEditCategory(category)}
                           className="inline-flex items-center px-3 py-1 text-sm font-medium text-blue-600 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors"
                         >
@@ -183,6 +193,45 @@ function CategoryList() {
           </p>
         </div>
       </div>
+
+      {/* Modal de visualización de categoría */}
+      {showCategory && selectedCategory && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden animate-in">
+            {/* Encabezado */}
+            <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-6 flex justify-between items-center">
+              <h3 className="text-2xl font-bold text-white">Detalles de Categoría</h3>
+              <button
+                onClick={() => setShowCategory(false)}
+                className="text-white hover:bg-blue-700 rounded-full p-2 transition-colors"
+                aria-label="Cerrar"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="px-6 py-6 space-y-6">
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                  Nombre
+                </label>
+                <p className="text-lg font-semibold text-gray-800 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">
+                  {selectedCategory.name}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end">
+              <button
+                onClick={() => setShowCategory(false)}
+                className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-md hover:shadow-lg"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de confirmación de eliminación */}
       {deleteModal.show && (
