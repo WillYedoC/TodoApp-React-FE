@@ -32,11 +32,14 @@ export const categoryService = {
 
   async delete(id) {
     const response = await fetch(`${API_URL}/categories/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: {
-        "Content-Type": "application/json"
-      }
+        "Content-Type": "application/json",
+      },
     });
+    if (!response.ok) {
+      throw new Error("Error al eliminar la categoría");
+    }
     return await response.json();
   }
 };
