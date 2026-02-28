@@ -17,6 +17,7 @@ export const categoryService = {
       },
       body: JSON.stringify(categoryData)
     });
+    
     return await response.json();
   },
   async update(id, categoryData) {
@@ -46,6 +47,9 @@ export const categoryService = {
         "Content-Type": "application/json"
       }
     });
+    if(!response.ok){
+      throw new Error("Error al obtener la categoría");
+    }
     return await response.json();
   }
 };
