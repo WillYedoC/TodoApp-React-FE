@@ -1,3 +1,31 @@
+:root {
+  --brand-primary: #646cff;
+  --brand-primary-light: #646cffaa;
+  --brand-secondary: #61dafb;
+  --brand-secondary-light: #61dafbaa;
+
+  --color-white: #ffffff;
+  --color-bg: #242424;
+  --color-text: #213547;
+  --color-text-light: #888;
+
+  --color-success: #4ade80;
+  --color-warning: #facc15;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --color-text: #213547;
+    --color-bg: #ffffff;
+  }
+}
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
