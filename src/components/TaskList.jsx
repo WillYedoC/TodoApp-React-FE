@@ -30,9 +30,10 @@ function TaskList() {
     setSelectedTask(null);
     setShowForm(true);
   };
-
-
-
+  const handleEdit = (task) => {
+    setSelectedTask(task);
+    setShowForm(true);
+  }
   const handleFormSuccess = () => {
     loadTasks();
     setShowForm(false);
@@ -131,6 +132,9 @@ function TaskList() {
                     </th>
                     <th className="px-6 py-4 text-center text-xs font-bold text-green-900 uppercase tracking-wider">
                       Estado
+                    </th >
+                    <th className='px-6 py-4 text-center text-xs font-bold text-green-900 uppercase tracking-wider'>
+                      Acciones
                     </th>
                   </tr>
                 </thead>
@@ -185,6 +189,14 @@ function TaskList() {
                         }`}>
                           {task.is_completed ? '✓ Completada' : '⏳ Pendiente'}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <button
+                          onClick={() => handleEdit(task)}
+                          className="inline-flex items-center justify-center px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-gray-800"
+                        >
+                          ✏️ Editar
+                        </button>
                       </td>
                     </tr>
                   ))}

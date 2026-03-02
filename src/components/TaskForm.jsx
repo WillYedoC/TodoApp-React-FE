@@ -3,7 +3,9 @@ import { tareaService } from "../services/task.service";
 import { tagService } from "../services/tag.service";
 import { categoryService } from "../services/category.service";
 
-function TaskForm({ onSuccess, onCancel }) {
+function TaskForm({ task, onSuccess, onCancel }) {
+  const isEditing = !!task;
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -21,6 +23,18 @@ function TaskForm({ onSuccess, onCancel }) {
   useEffect(() => {
     loadCategoriesAndTags();
   }, []);
+
+  useEffect(() => {
+    if (task) {
+      setFormData({
+        title: task.title || "",
+        description: task.description || "",
+        categoryId: task.category_id || task.category?.id || "",
+        tagIds: task.tags ? task.tags.map((t) => t.id) : [],
+        is_completed: task.is_completed ?? false,
+      });
+    }
+  }, [task]);
 
   const loadCategoriesAndTags = async () => {
     try {
@@ -72,8 +86,7 @@ function TaskForm({ onSuccess, onCancel }) {
     const newErrors = {};
     if (!formData.title.trim()) {
       newErrors.title = "El título es requerido";
-    }
-    if (formData.title.trim().length < 3) {
+    } else if (formData.title.trim().length < 3) {
       newErrors.title = "El título debe tener al menos 3 caracteres";
     }
     setErrors(newErrors);
@@ -98,12 +111,18 @@ function TaskForm({ onSuccess, onCancel }) {
         tags: formData.tagIds,
       };
 
-      await tareaService.create(taskData);
-      alert("Tarea creada exitosamente");
+      if (isEditing) {
+        await tareaService.update(task.id, taskData);
+        alert("Tarea actualizada exitosamente");
+      } else {
+        await tareaService.create(taskData);
+        alert("Tarea creada exitosamente");
+      }
+
       onSuccess();
     } catch (error) {
-      console.error("Error al crear tarea:", error);
-      alert("Error al crear la tarea");
+      console.error(`Error al ${isEditing ? "actualizar" : "crear"} tarea:`, error);
+      alert(`Error al ${isEditing ? "actualizar" : "crear"} la tarea`);
     } finally {
       setLoading(false);
     }
@@ -112,8 +131,16 @@ function TaskForm({ onSuccess, onCancel }) {
   if (loadingData) {
     return (
       <div className="bg-gradient-to-br from-white to-green-50 rounded-2xl shadow-2xl border border-green-100/50 overflow-hidden">
-        <div className="bg-gradient-to-r from-green-600 via-emerald-500 to-green-600 px-8 py-7">
-          <h3 className="text-3xl font-bold text-white">➕ Nueva Tarea</h3>
+        <div
+          className={`bg-gradient-to-r ${
+            isEditing
+              ? "from-blue-600 via-indigo-500 to-blue-600"
+              : "from-green-600 via-emerald-500 to-green-600"
+          } px-8 py-7`}
+        >
+          <h3 className="text-3xl font-bold text-white">
+            {isEditing ? "✏️ Editar Tarea" : "➕ Nueva Tarea"}
+          </h3>
         </div>
         <div className="p-8 bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center min-h-[300px]">
           <div className="text-center">
@@ -129,16 +156,25 @@ function TaskForm({ onSuccess, onCancel }) {
 
   return (
     <div className="bg-gradient-to-br from-white to-green-50 rounded-2xl shadow-2xl border border-green-100/50 overflow-hidden">
-      <div className="bg-gradient-to-r from-green-600 via-emerald-500 to-green-600 px-8 py-7 relative overflow-hidden">
+      {/* Header dinámico según modo */}
+      <div
+        className={`bg-gradient-to-r ${
+          isEditing
+            ? "from-blue-600 via-indigo-500 to-blue-600"
+            : "from-green-600 via-emerald-500 to-green-600"
+        } px-8 py-7 relative overflow-hidden`}
+      >
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-300 rounded-full blur-3xl -mr-20 -mt-20"></div>
         </div>
         <div className="relative z-10">
           <h3 className="text-3xl font-bold text-white flex items-center gap-3">
-            ➕ Nueva Tarea
+            {isEditing ? "✏️ Editar Tarea" : "➕ Nueva Tarea"}
           </h3>
           <p className="text-green-100 text-sm mt-2 font-medium">
-            Crea una nueva tarea para organizar tu trabajo
+            {isEditing
+              ? "Modifica los datos de la tarea seleccionada"
+              : "Crea una nueva tarea para organizar tu trabajo"}
           </p>
         </div>
       </div>
@@ -148,6 +184,7 @@ function TaskForm({ onSuccess, onCancel }) {
         className="p-8 bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900"
       >
         <div className="space-y-7">
+          {/* Título */}
           <div>
             <label className="block text-sm font-bold text-white mb-3 flex items-center gap-2">
               ✅ Título
@@ -182,6 +219,7 @@ function TaskForm({ onSuccess, onCancel }) {
             )}
           </div>
 
+          {/* Descripción */}
           <div>
             <label className="block text-sm font-bold text-white mb-3 flex items-center gap-2">
               📝 Descripción
@@ -197,6 +235,7 @@ function TaskForm({ onSuccess, onCancel }) {
             />
           </div>
 
+          {/* Categoría */}
           <div>
             <label className="block text-sm font-bold text-white mb-3 flex items-center gap-2">
               📁 Categoría
@@ -217,6 +256,7 @@ function TaskForm({ onSuccess, onCancel }) {
             </select>
           </div>
 
+          {/* Etiquetas */}
           <div>
             <label className="block text-sm font-bold text-white mb-3 flex items-center gap-2">
               🏷️ Etiquetas
@@ -261,6 +301,7 @@ function TaskForm({ onSuccess, onCancel }) {
             )}
           </div>
 
+          {/* Estado */}
           <div>
             <label className="flex items-center gap-3 p-4 border-2 border-gray-600 bg-gray-800 rounded-xl hover:border-emerald-400 transition-all duration-300 cursor-pointer group">
               <input
@@ -278,6 +319,7 @@ function TaskForm({ onSuccess, onCancel }) {
           </div>
         </div>
 
+        {/* Botones */}
         <div className="flex gap-4 justify-end pt-8 border-t-2 border-gray-700 mt-8">
           <button
             type="button"
@@ -290,13 +332,19 @@ function TaskForm({ onSuccess, onCancel }) {
           <button
             type="submit"
             disabled={loading}
-            className="px-7 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl flex items-center gap-2"
+            className={`px-7 py-3 bg-gradient-to-r ${
+              isEditing
+                ? "from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                : "from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+            } text-white font-bold rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl flex items-center gap-2`}
           >
             {loading ? (
               <>
                 <span className="animate-spin text-lg">⏳</span>
-                Creando...
+                {isEditing ? "Actualizando..." : "Creando..."}
               </>
+            ) : isEditing ? (
+              <>✏️ Actualizar Tarea</>
             ) : (
               <>➕ Crear Tarea</>
             )}
