@@ -1,4 +1,4 @@
-import API_URL from './index'
+import API_URL from "./index";
 
 export const tareaService = {
   async getAll() {
@@ -34,5 +34,13 @@ export const tareaService = {
       throw new Error('Error al actualizar la tarea');
     }
     return await response.json();
-  }
-}
+  },
+  async delete(id) {
+    const response = await fetch(`${API_URL}/tasks/${id}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      throw new Error("Error al eliminar la tarea");
+    }
+  },
+};

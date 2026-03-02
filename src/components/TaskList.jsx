@@ -1,115 +1,126 @@
-import { useState, useEffect } from "react";
-import { tareaService } from "../services/task.service";
-import TaskForm from "./TaskForm";
+import { useState, useEffect } from 'react';
+import { tareaService } from '../services/task.service';
+import TaskForm from './TaskForm';
 
-// ─── Componente Modal ────────────────────────────────────────────────────────
+// ─── Modal Ver ────────────────────────────────────────────────────────────────
 function TaskModal({ task, onClose }) {
   if (!task) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      {/* Modal */}
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-gray-900 rounded-2xl shadow-2xl border border-gray-700 w-full max-w-lg overflow-hidden">
-        {/* Header */}
         <div className="bg-gradient-to-r from-green-600 via-emerald-500 to-green-600 px-6 py-5 flex items-start justify-between">
           <div>
-            <p className="text-green-200 text-xs font-semibold uppercase tracking-widest mb-1">
-              Tarea #{task.id}
-            </p>
-            <h3 className="text-2xl font-bold text-white leading-tight">
-              {task.title}
-            </h3>
+            <p className="text-green-200 text-xs font-semibold uppercase tracking-widest mb-1">Tarea #{task.id}</p>
+            <h3 className="text-2xl font-bold text-white leading-tight">{task.title}</h3>
           </div>
-          <button
-            onClick={onClose}
-            className="text-white/70 hover:text-white text-2xl leading-none ml-4 mt-1 transition-colors"
-          >
-            ✕
-          </button>
+          <button onClick={onClose} className="text-white/70 hover:text-white text-2xl leading-none ml-4 mt-1 transition-colors">✕</button>
         </div>
-
-        {/* Body */}
         <div className="p-6 space-y-5">
-          {/* Categoría */}
           <div className="flex items-center gap-3">
-            <span className="text-gray-400 text-sm font-semibold uppercase tracking-wider w-28">
-              Categoría
+            <span className="text-gray-400 text-sm font-semibold uppercase tracking-wider w-28">Estado</span>
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold ${task.is_completed ? 'bg-green-900/60 text-green-300 border border-green-700' : 'bg-yellow-900/60 text-yellow-300 border border-yellow-700'}`}>
+              {task.is_completed ? '✓ Completada' : '⏳ Pendiente'}
             </span>
-            {task.category ? (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-900/50 text-blue-300 rounded-lg text-xs font-medium border border-blue-700">
-                📁 {task.category.name}
-              </span>
-            ) : (
-              <span className="text-gray-500 text-sm italic">
-                Sin categoría
-              </span>
-            )}
           </div>
-
-          {/* Etiquetas */}
+          <div className="flex items-center gap-3">
+            <span className="text-gray-400 text-sm font-semibold uppercase tracking-wider w-28">Categoría</span>
+            {task.category ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-900/50 text-blue-300 rounded-lg text-xs font-medium border border-blue-700">📁 {task.category.name}</span>
+            ) : <span className="text-gray-500 text-sm italic">Sin categoría</span>}
+          </div>
           <div className="flex items-start gap-3">
-            <span className="text-gray-400 text-sm font-semibold uppercase tracking-wider w-28 pt-1">
-              Etiquetas
-            </span>
+            <span className="text-gray-400 text-sm font-semibold uppercase tracking-wider w-28 pt-1">Etiquetas</span>
             {task.tags && task.tags.length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {task.tags.map((tag) => (
-                  <span
-                    key={tag.id}
-                    className="px-2.5 py-1 rounded-full text-white text-xs font-medium shadow-sm"
-                    style={{ backgroundColor: tag.color || "#6B7280" }}
-                  >
+                  <span key={tag.id} className="px-2.5 py-1 rounded-full text-white text-xs font-medium shadow-sm" style={{ backgroundColor: tag.color || '#6B7280' }}>
                     🏷️ {tag.name}
                   </span>
                 ))}
               </div>
-            ) : (
-              <span className="text-gray-500 text-sm italic">
-                Sin etiquetas
-              </span>
-            )}
+            ) : <span className="text-gray-500 text-sm italic">Sin etiquetas</span>}
           </div>
-
-          {/* Descripción */}
           <div className="flex flex-col gap-2">
-            <span className="text-gray-400 text-sm font-semibold uppercase tracking-wider">
-              📝 Descripción
-            </span>
+            <span className="text-gray-400 text-sm font-semibold uppercase tracking-wider">📝 Descripción</span>
             <div className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-300 leading-relaxed min-h-[80px]">
-              {task.description || (
-                <span className="text-gray-500 italic">Sin descripción</span>
-              )}
+              {task.description || <span className="text-gray-500 italic">Sin descripción</span>}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4 pt-1">
+            <div className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3">
+              <p className="text-gray-500 text-xs uppercase tracking-wider mb-1">Creada</p>
+              <p className="text-gray-300 text-sm font-medium">
+                {task.created_at ? new Date(task.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+              </p>
+            </div>
+            <div className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3">
+              <p className="text-gray-500 text-xs uppercase tracking-wider mb-1">Actualizada</p>
+              <p className="text-gray-300 text-sm font-medium">
+                {task.updated_at ? new Date(task.updated_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+              </p>
             </div>
           </div>
         </div>
-        {/*Estado */}
-        <div className="flex items-center gap-3">
-          <span className="text-gray-400 text-sm font-semibold uppercase tracking-wider w-28">
-            Estado
-          </span>
-          <span
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold ${
-              task.is_completed
-                ? "bg-green-900/60 text-green-300 border border-green-700"
-                : "bg-yellow-900/60 text-yellow-300 border border-yellow-700"
-            }`}
-          >
-            {task.is_completed ? "✓ Completada" : "⏳ Pendiente"}
-          </span>
-        </div>
-        {/* Footer */}
         <div className="px-6 py-4 border-t border-gray-700 flex justify-end">
-          <button
-            onClick={onClose}
-            className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 font-semibold rounded-xl transition-colors duration-200 border border-gray-600 text-sm"
-          >
+          <button onClick={onClose} className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 font-semibold rounded-xl transition-colors duration-200 border border-gray-600 text-sm">
             Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Modal Eliminar ───────────────────────────────────────────────────────────
+function DeleteModal({ task, onConfirm, onCancel, deleting }) {
+  if (!task) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={!deleting ? onCancel : undefined} />
+      <div className="relative bg-gray-900 rounded-2xl shadow-2xl border border-red-900/50 w-full max-w-md overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-red-700 via-red-600 to-red-700 px-6 py-5 flex items-start justify-between">
+          <div>
+            <p className="text-red-200 text-xs font-semibold uppercase tracking-widest mb-1">Confirmar acción</p>
+            <h3 className="text-xl font-bold text-white">🗑️ Eliminar Tarea</h3>
+          </div>
+          {!deleting && (
+            <button onClick={onCancel} className="text-white/70 hover:text-white text-2xl leading-none ml-4 mt-1 transition-colors">✕</button>
+          )}
+        </div>
+
+        {/* Body */}
+        <div className="p-6 space-y-4">
+          <div className="flex items-start gap-4 bg-red-950/40 border border-red-800/50 rounded-xl p-4">
+            <span className="text-3xl mt-0.5">⚠️</span>
+            <div>
+              <p className="text-white font-semibold text-sm mb-1">¿Estás seguro de eliminar esta tarea?</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-gray-700 flex justify-end gap-3">
+          <button
+            onClick={onCancel}
+            disabled={deleting}
+            className="px-5 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 font-semibold rounded-xl transition-colors duration-200 border border-gray-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={deleting}
+            className="px-5 py-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold rounded-xl transition-all duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg"
+          >
+            {deleting ? (
+              <><span className="animate-spin">⏳</span> Eliminando...</>
+            ) : (
+              <>🗑️ Sí, eliminar</>
+            )}
           </button>
         </div>
       </div>
@@ -123,11 +134,11 @@ function TaskList() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
-  const [viewTask, setViewTask] = useState(null); // 👈 nuevo estado para el modal
+  const [viewTask, setViewTask] = useState(null);
+  const [deleteTask, setDeleteTask] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => {
-    loadTasks();
-  }, []);
+  useEffect(() => { loadTasks(); }, []);
 
   const loadTasks = async () => {
     try {
@@ -135,36 +146,37 @@ function TaskList() {
       const data = await tareaService.getAll();
       setTasks(Array.isArray(data) ? data : data.data || []);
     } catch (error) {
-      console.error("Error al cargar tareas:", error);
-      alert("Error al cargar las tareas");
+      console.error('Error al cargar tareas:', error);
+      alert('Error al cargar las tareas');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleNewTask = () => {
-    setSelectedTask(null);
-    setShowForm(true);
+  const handleNewTask = () => { setSelectedTask(null); setShowForm(true); };
+  const handleEdit = (task) => { setSelectedTask(task); setShowForm(true); };
+  const handleView = (task) => { setViewTask(task); };
+  const handleCloseModal = () => { setViewTask(null); };
+  const handleDeleteClick = (task) => { setDeleteTask(task); };
+  const handleDeleteCancel = () => { setDeleteTask(null); };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTask) return;
+    setDeleting(true);
+    try {
+      await tareaService.delete(deleteTask.id);
+      setTasks((prev) => prev.filter((t) => t.id !== deleteTask.id));
+      setDeleteTask(null);
+    } catch (error) {
+      console.error('Error al eliminar tarea:', error);
+      alert('Error al eliminar la tarea');
+    } finally {
+      setDeleting(false);
+    }
   };
-  const handleEdit = (task) => {
-    setSelectedTask(task);
-    setShowForm(true);
-  };
-  const handleView = (task) => {
-    setViewTask(task);
-  }; // 👈 nuevo
-  const handleCloseModal = () => {
-    setViewTask(null);
-  }; // 👈 nuevo
-  const handleFormSuccess = () => {
-    loadTasks();
-    setShowForm(false);
-    setSelectedTask(null);
-  };
-  const handleFormCancel = () => {
-    setShowForm(false);
-    setSelectedTask(null);
-  };
+
+  const handleFormSuccess = () => { loadTasks(); setShowForm(false); setSelectedTask(null); };
+  const handleFormCancel = () => { setShowForm(false); setSelectedTask(null); };
 
   if (loading) {
     return (
@@ -179,27 +191,25 @@ function TaskList() {
 
   return (
     <div className="space-y-6">
-      {/* Modal de vista 👇 */}
+      {/* Modales */}
       <TaskModal task={viewTask} onClose={handleCloseModal} />
+      <DeleteModal
+        task={deleteTask}
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+        deleting={deleting}
+      />
 
       {showForm && (
-        <TaskForm
-          task={selectedTask}
-          onSuccess={handleFormSuccess}
-          onCancel={handleFormCancel}
-        />
+        <TaskForm task={selectedTask} onSuccess={handleFormSuccess} onCancel={handleFormCancel} />
       )}
 
       <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200">
         <div className="bg-gradient-to-r from-green-600 to-green-500 px-8 py-6">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
             <div>
-              <h2 className="text-3xl font-bold text-white mb-1">
-                ✅ Gestión de Tareas
-              </h2>
-              <p className="text-green-100 text-sm">
-                Organiza y gestiona todas tus tareas
-              </p>
+              <h2 className="text-3xl font-bold text-white mb-1">✅ Gestión de Tareas</h2>
+              <p className="text-green-100 text-sm">Organiza y gestiona todas tus tareas</p>
             </div>
             <button
               onClick={handleNewTask}
@@ -209,9 +219,7 @@ function TaskList() {
             </button>
           </div>
           <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 text-center mt-6">
-            <p className="text-white/80 text-xs font-semibold uppercase">
-              Total de Tareas
-            </p>
+            <p className="text-white/80 text-xs font-semibold uppercase">Total de Tareas</p>
             <p className="text-white text-2xl font-bold">{tasks.length}</p>
           </div>
         </div>
@@ -220,16 +228,9 @@ function TaskList() {
           {tasks.length === 0 ? (
             <div className="text-center py-12 px-4">
               <div className="text-6xl mb-4">📋</div>
-              <p className="text-gray-500 text-lg font-medium mb-2">
-                No hay tareas registradas
-              </p>
-              <p className="text-gray-400 text-sm mb-6">
-                Crea tu primera tarea para comenzar
-              </p>
-              <button
-                onClick={handleNewTask}
-                className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors"
-              >
+              <p className="text-gray-500 text-lg font-medium mb-2">No hay tareas registradas</p>
+              <p className="text-gray-400 text-sm mb-6">Crea tu primera tarea para comenzar a organizar tu trabajo</p>
+              <button onClick={handleNewTask} className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors">
                 Crear Tarea
               </button>
             </div>
@@ -238,30 +239,14 @@ function TaskList() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b-2 border-green-200 bg-green-50">
-                    {[
-                      "ID",
-                      "Título",
-                      "Descripción",
-                      "Categoría",
-                      "Etiquetas",
-                      "Estado",
-                      "Acciones",
-                    ].map((h) => (
-                      <th
-                        key={h}
-                        className="px-6 py-4 text-center text-xs font-bold text-green-900 uppercase tracking-wider"
-                      >
-                        {h}
-                      </th>
+                    {['ID', 'Título', 'Descripción', 'Categoría', 'Etiquetas', 'Estado', 'Acciones'].map((h) => (
+                      <th key={h} className="px-6 py-4 text-center text-xs font-bold text-green-900 uppercase tracking-wider">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {tasks.map((task) => (
-                    <tr
-                      key={task.id}
-                      className="hover:bg-green-50 transition-colors duration-200 group"
-                    >
+                    <tr key={task.id} className="hover:bg-green-50 transition-colors duration-200 group">
                       <td className="px-6 py-4 whitespace-nowrap text-center">
                         <span className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-green-100 text-green-600 font-semibold text-sm group-hover:bg-green-200 transition-colors">
                           {task.id}
@@ -271,48 +256,33 @@ function TaskList() {
                         {task.title}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">
-                        {task.description || "-"}
+                        {task.description || '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
                         {task.category ? (
                           <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium border border-blue-200">
                             📁 {task.category.name}
                           </span>
-                        ) : (
-                          <span className="text-gray-400 text-sm">-</span>
-                        )}
+                        ) : <span className="text-gray-400 text-sm">-</span>}
                       </td>
                       <td className="px-6 py-4">
                         {task.tags && task.tags.length > 0 ? (
                           <div className="flex flex-wrap gap-1 justify-center">
                             {task.tags.map((tag) => (
-                              <span
-                                key={tag.id}
-                                className="px-2 py-1 rounded-full text-white text-xs font-medium shadow-sm"
-                                style={{
-                                  backgroundColor: tag.color || "#6B7280",
-                                }}
-                              >
+                              <span key={tag.id} className="px-2 py-1 rounded-full text-white text-xs font-medium shadow-sm" style={{ backgroundColor: tag.color || '#6B7280' }}>
                                 {tag.name}
                               </span>
                             ))}
                           </div>
-                        ) : (
-                          <span className="text-gray-400 text-sm text-center block">
-                            -
-                          </span>
-                        )}
+                        ) : <span className="text-gray-400 text-sm text-center block">-</span>}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <span
-                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold ${task.is_completed ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}
-                        >
-                          {task.is_completed ? "✓ Completada" : "⏳ Pendiente"}
+                        <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold ${task.is_completed ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                          {task.is_completed ? '✓ Completada' : '⏳ Pendiente'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
                         <div className="flex items-center justify-center gap-2">
-                          {/* 👁️ Botón Ver — nuevo */}
                           <button
                             onClick={() => handleView(task)}
                             className="inline-flex items-center px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-1"
@@ -324,6 +294,12 @@ function TaskList() {
                             className="inline-flex items-center px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1"
                           >
                             ✏️ Editar
+                          </button>
+                          <button
+                            onClick={() => handleDeleteClick(task)}
+                            className="inline-flex items-center px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-xs font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1"
+                          >
+                            🗑️ Eliminar
                           </button>
                         </div>
                       </td>
@@ -337,9 +313,7 @@ function TaskList() {
 
         <div className="bg-gray-100 px-8 py-4 border-t border-gray-200">
           <p className="text-sm text-gray-600">
-            Total de{" "}
-            <span className="font-semibold text-gray-800">{tasks.length}</span>{" "}
-            tarea{tasks.length !== 1 ? "s" : ""}
+            Total de <span className="font-semibold text-gray-800">{tasks.length}</span> tarea{tasks.length !== 1 ? 's' : ''}
           </p>
         </div>
       </div>
