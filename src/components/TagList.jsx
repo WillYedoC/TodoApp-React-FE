@@ -110,7 +110,6 @@ function TagList() {
 
   return (
     <div className="space-y-6">
-      {/* Formulario */}
       {showForm && (
         <TagForm
           tag={selectedTag}
@@ -291,7 +290,6 @@ function TagList() {
       </div>
       {showTag && selectedTag && (
         <Modal isOpen={showTag} onClose={() => setShowTag(false)}>
-          {/* Header con color de la etiqueta */}
           <div
             className="relative px-8 py-10 text-white overflow-hidden"
             style={{ backgroundColor: selectedTag?.color || "#6B7280" }}
@@ -325,11 +323,8 @@ function TagList() {
             </div>
           </div>
 
-          {/* Body */}
           <div className="p-8 space-y-6">
-            {/* Color Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Color Display */}
               <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200">
                 <h4 className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-4">
                   🎨 Color de la Etiqueta
@@ -350,7 +345,6 @@ function TagList() {
                 </div>
               </div>
 
-              {/* Preview Section */}
               <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-6 border border-gray-200">
                 <h4 className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-4">
                   👁️ Vista Previa
@@ -386,7 +380,6 @@ function TagList() {
               </div>
             </div>
 
-            {/* Info Section */}
             <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-6 border border-purple-100">
               <h4 className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
                 ℹ️ Información General
@@ -412,7 +405,6 @@ function TagList() {
             </div>
           </div>
 
-          {/* Footer */}
           <div className="p-6 bg-gray-50 border-t border-gray-200 flex gap-3">
             <button
               onClick={() => setShowTag(false)}
@@ -440,7 +432,6 @@ function TagList() {
             setDeleteModal({ show: false, tagId: null, tagName: "" })
           }
         >
-          {/* Header */}
           <div className="bg-gradient-to-r from-red-500 to-red-600 px-8 py-8 text-white relative overflow-hidden">
             <div className="absolute inset-0 opacity-10">
               <div className="absolute bottom-0 right-0 w-40 h-40 bg-white rounded-full -mr-20 -mb-20"></div>
@@ -490,7 +481,6 @@ function TagList() {
             </div>
           </div>
 
-          {/* Body */}
           <div className="p-8">
             <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded-lg">
               <p className="text-red-900 font-semibold text-lg mb-2">
@@ -506,7 +496,6 @@ function TagList() {
             </div>
           </div>
 
-          {/* Footer */}
           <div className="p-6 bg-gray-50 border-t border-gray-200 flex gap-3">
             <button
               onClick={() =>

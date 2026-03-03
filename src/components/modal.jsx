@@ -1,13 +1,11 @@
 import { useEffect } from 'react';
 
 function Modal({ isOpen, onClose, children, maxWidth = 'max-w-md' }) {
-  // Bloquear scroll
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : 'auto';
     return () => (document.body.style.overflow = 'auto');
   }, [isOpen]);
 
-  // Cerrar con ESC
   useEffect(() => {
     const handleEsc = (e) => e.key === 'Escape' && onClose();
     if (isOpen) window.addEventListener('keydown', handleEsc);
