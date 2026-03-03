@@ -9,7 +9,6 @@ export const tareaService = {
     return await response.json();
   },
   async create(data) {
-    console.log(data);
     const response = await fetch(`${API_URL}/tasks`, {
       method: 'POST',
       headers: {

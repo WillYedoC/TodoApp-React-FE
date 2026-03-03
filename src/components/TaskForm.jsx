@@ -156,7 +156,6 @@ function TaskForm({ task, onSuccess, onCancel }) {
 
   return (
     <div className="bg-gradient-to-br from-white to-green-50 rounded-2xl shadow-2xl border border-green-100/50 overflow-hidden">
-      {/* Header dinámico según modo */}
       <div
         className={`bg-gradient-to-r ${
           isEditing
@@ -184,7 +183,6 @@ function TaskForm({ task, onSuccess, onCancel }) {
         className="p-8 bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900"
       >
         <div className="space-y-7">
-          {/* Título */}
           <div>
             <label className="block text-sm font-bold text-white mb-3 flex items-center gap-2">
               ✅ Título
@@ -219,7 +217,6 @@ function TaskForm({ task, onSuccess, onCancel }) {
             )}
           </div>
 
-          {/* Descripción */}
           <div>
             <label className="block text-sm font-bold text-white mb-3 flex items-center gap-2">
               📝 Descripción
@@ -235,7 +232,6 @@ function TaskForm({ task, onSuccess, onCancel }) {
             />
           </div>
 
-          {/* Categoría */}
           <div>
             <label className="block text-sm font-bold text-white mb-3 flex items-center gap-2">
               📁 Categoría
@@ -256,7 +252,6 @@ function TaskForm({ task, onSuccess, onCancel }) {
             </select>
           </div>
 
-          {/* Etiquetas */}
           <div>
             <label className="block text-sm font-bold text-white mb-3 flex items-center gap-2">
               🏷️ Etiquetas
@@ -301,7 +296,6 @@ function TaskForm({ task, onSuccess, onCancel }) {
             )}
           </div>
 
-          {/* Estado */}
           <div>
             <label className="flex items-center gap-3 p-4 border-2 border-gray-600 bg-gray-800 rounded-xl hover:border-emerald-400 transition-all duration-300 cursor-pointer group">
               <input
@@ -319,7 +313,6 @@ function TaskForm({ task, onSuccess, onCancel }) {
           </div>
         </div>
 
-        {/* Botones */}
         <div className="flex gap-4 justify-end pt-8 border-t-2 border-gray-700 mt-8">
           <button
             type="button"
