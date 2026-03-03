@@ -8,4 +8,30 @@ export const tareaService = {
     }
     return await response.json();
   },
+  async create(data) {
+    const response = await fetch(`${API_URL}/tasks`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      throw new Error('Error al crear la tarea');
+    }
+    return await response.json();
+  },
+  async update(id, data) {
+    const response = await fetch(`${API_URL}/tasks/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      throw new Error('Error al actualizar la tarea');
+    }
+    return await response.json();
+  }
 }
