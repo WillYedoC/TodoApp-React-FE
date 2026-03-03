@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
 import { tareaService } from './services/task.service';
+import CategoryList from './components/CategoryList';
+import Login from './components/Login';
+import Navbar from './components/Navbar';
 import './App.css';
+import { Routes, Route } from "react-router-dom";
+
 
 const API_URL = 'http://localhost:8000/api';
 
@@ -44,6 +49,18 @@ if (error) return <div>{error}</div>;
 return (
   <div className="App">
     <p>Revisa la consola para ver las tareas</p>
+    <Navbar/>
+    <Routes>
+      <Route 
+      path="/Login"
+      element={<Login />}
+      />
+      <Route 
+      path='/CategoryList'
+      element={<CategoryList />}
+      />
+    </Routes>
+
   </div>
 );
 }
