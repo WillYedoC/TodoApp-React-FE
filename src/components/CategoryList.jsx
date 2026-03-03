@@ -55,7 +55,6 @@ function CategoryList() {
 
   return (
     <div className="space-y-6">
-      {/* Formulario */}
       {showForm && (
         <CategoryForm
           onSuccess={handleFormSuccess}
@@ -63,7 +62,6 @@ function CategoryList() {
         />
       )}
 
-      {/* Contenedor principal */}
       <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200">
         <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-8 py-6 flex justify-between items-center">
           <div>

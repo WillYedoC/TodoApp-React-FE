@@ -57,10 +57,8 @@ function CategoryForm({ onSuccess, onCancel }) {
         </p>
       </div>
 
-      {/* Formulario */}
       <form onSubmit={handleSubmit} className="p-8">
         <div className="space-y-6">
-          {/* Campo Nombre */}
           <div>
             <label className="block text-sm font-bold text-gray-800 mb-2 flex items-center gap-2">
                Nombre
@@ -95,7 +93,6 @@ function CategoryForm({ onSuccess, onCancel }) {
 
         </div>
 
-        {/* Botones */}
         <div className="flex gap-3 justify-end pt-8 border-t border-gray-200 mt-8">
           <button
             type="button"
