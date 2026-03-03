@@ -44,5 +44,17 @@ export const categoryService = {
       throw new Error("Error al eliminar la categoría");
     }
     return await response.json();
+  },
+  async getOne(id) {
+    const response = await fetch(`${API_URL}/categories/${id}`, {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+    if(!response.ok){
+      throw new Error("Error al obtener la categoría");
+    }
+    return await response.json();
   }
 };
