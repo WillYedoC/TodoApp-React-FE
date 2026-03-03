@@ -16,7 +16,6 @@ function App() {
   const initializeApp = async () => {
     try {
       setLoading(true);
-      await login();
       await fetchTasks();
     } catch (err) {
       setError('Error al autorizar o cargar las tareas');
@@ -24,28 +23,6 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const login = async () => {
-    const response = await fetch(`${API_URL}/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({
-        email: 'juan@example.com',
-        password: 'password123',
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Credenciales inválidas');
-    }
-
-    const data = await response.json();
-
-    localStorage.setItem('token', data.data.access_token);
   };
 
 const fetchTasks = async () => {
