@@ -57,7 +57,6 @@ function TaskList() {
 
   return (
     <div className="space-y-6">
-      {/* Formulario */}
       {showForm && (
         <TaskForm
           task={selectedTask}
@@ -66,7 +65,6 @@ function TaskList() {
         />
       )}
 
-      {/* Contenedor principal */}
       <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200">
         <div className="bg-gradient-to-r from-green-600 to-green-500 px-8 py-6">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
@@ -86,7 +84,6 @@ function TaskList() {
             </button>
           </div>
 
-          {/* Estadísticas */}
           <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 text-center mt-6">
             <p className="text-white/80 text-xs font-semibold uppercase">Total de Tareas</p>
             <p className="text-white text-2xl font-bold">{tasks.length}</p>
