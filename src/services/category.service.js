@@ -1,13 +1,25 @@
 import API_URL from "./index";
 
 export const categoryService = {
-  async getAll() {
-    const response = await fetch(`${API_URL}/categories`);
 
-    if (!response.ok) {
-      throw new Error('Error al obtener las categorias');
+  async getAll(page = 1, perPage = 10) {
+    try {
+      const response = await fetch(`${API_URL}/categories?page=${page}&per_page=${perPage}`, {
+        method: 'GET',
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al obtener las categorías');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error en getAll:', error);
+      throw error;
     }
-    return await response.json();
   },
   async create(categoryData) {
     const response = await fetch(`${API_URL}/categories`, {

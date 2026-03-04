@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { tareaService } from "../services/task.service";
 import TaskForm from "./TaskForm";
+import Pagination from "./Pagination";
 
 function TaskModal({ task, onClose }) {
   if (!task) return null;
@@ -112,22 +113,58 @@ function TaskList() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
-  const [viewTask, setViewTask] = useState(null);
+  const [filter, setFilter] = useState('all');
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(9);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
+  const [stats, setStats] = useState({
+    total: 0,
+    completed: 0,
+    pending: 0
+  });
   useEffect(() => {
     loadTasks();
-  }, []);
+    loadStats();
+  }, [currentPage, itemsPerPage, filter]);
 
   const loadTasks = async () => {
     try {
       setLoading(true);
-      const data = await tareaService.getAll();
-      setTasks(Array.isArray(data) ? data : data.data || []);
+      const data = await tareaService.getAll(currentPage, itemsPerPage, filter);
+      if(data.data){
+        setTasks(data.data);
+        setTotalItems(data.total || 0);
+        setTotalPages(data.last_page || 0);
+        setCurrentPage(data.current_page || 1);
+      }
+      else{
+        const taskList = Array.isArray(data) ? data : data.data || [];
+        setTasks(taskList);
+        setTotalItems(taskList.length);
+        setTotalPages(Math.ceil(taskList.length / itemsPerPage));
+      }
     } catch (error) {
-      console.error("Error al cargar tareas:", error);
-      alert("Error al cargar las tareas");
+      console.error('Error al cargar tareas:', error);
+      alert('Error al cargar las tareas');
     } finally {
       setLoading(false);
+    }
+  };
+  const loadStats = async () => {
+    try {
+      const allData = await tareaService.getAll(1, 1000, 'all');
+      const allTasks = allData.data || allData || [];
+      
+      setStats({
+        total: allTasks.length,
+        completed: allTasks.filter(t => t.completed).length,
+        pending: allTasks.filter(t => !t.completed).length
+      });
+    } catch (error) {
+      console.error('Error al cargar estadísticas:', error);
     }
   };
 
@@ -135,26 +172,31 @@ function TaskList() {
     setSelectedTask(null);
     setShowForm(true);
   };
-  const handleEdit = (task) => {
-    setSelectedTask(task);
-    setShowForm(true);
-  };
-  const handleView = (task) => {
-    setViewTask(task);
-  }; 
-  const handleCloseModal = () => {
-    setViewTask(null);
-  }; 
+
   const handleFormSuccess = () => {
     loadTasks();
     setShowForm(false);
     setSelectedTask(null);
   };
+
   const handleFormCancel = () => {
     setShowForm(false);
     setSelectedTask(null);
   };
+  const handleFilterChange = (newFilter) => {
+    setFilter(newFilter);
+    setCurrentPage(1);
+  };
 
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleItemsPerPageChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1);
+  };
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -168,8 +210,7 @@ function TaskList() {
 
   return (
     <div className="space-y-6">
-      <TaskModal task={viewTask} onClose={handleCloseModal} />
-      {showForm && (
+z      {showForm && (
         <TaskForm
           task={selectedTask}
           onSuccess={handleFormSuccess}
@@ -195,14 +236,37 @@ function TaskList() {
               <span>➕</span> Nueva Tarea
             </button>
           </div>
+
           <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 text-center mt-6">
-            <p className="text-white/80 text-xs font-semibold uppercase">
-              Total de Tareas
-            </p>
+            <p className="text-white/80 text-xs font-semibold uppercase">Total de Tareas</p>
             <p className="text-white text-2xl font-bold">{tasks.length}</p>
           </div>
         </div>
-
+        
+        <div className="bg-gray-50 border-b border-gray-200 px-8 py-3 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600 font-medium">
+              Mostrar:
+            </label>
+            <select
+              value={itemsPerPage}
+              onChange={handleItemsPerPageChange}
+              className="px-3 py-1 text-black border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+            <span className="text-sm text-gray-600">por página</span>
+          </div>
+          
+          <div className="text-sm text-gray-600">
+            Página <span className="font-semibold text-gray-800">{currentPage}</span> de{' '}
+            <span className="font-semibold text-gray-800">{totalPages || 1}</span>
+          </div>
+        </div>
+        
         <div className="p-8">
           {tasks.length === 0 ? (
             <div className="text-center py-12 px-4">
@@ -211,7 +275,7 @@ function TaskList() {
                 No hay tareas registradas
               </p>
               <p className="text-gray-400 text-sm mb-6">
-                Crea tu primera tarea para comenzar
+                Crea tu primera tarea para comenzar a organizar tu trabajo
               </p>
               <button
                 onClick={handleNewTask}
@@ -225,31 +289,33 @@ function TaskList() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b-2 border-green-200 bg-green-50">
-                    {[
-                      "ID",
-                      "Título",
-                      "Descripción",
-                      "Categoría",
-                      "Etiquetas",
-                      "Estado",
-                      "Acciones",
-                    ].map((h) => (
-                      <th
-                        key={h}
-                        className="px-6 py-4 text-center text-xs font-bold text-green-900 uppercase tracking-wider"
-                      >
-                        {h}
-                      </th>
-                    ))}
+                    <th className="px-6 py-4 text-center text-xs font-bold text-green-900 uppercase tracking-wider">
+                      ID
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-green-900 uppercase tracking-wider">
+                      Título
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-green-900 uppercase tracking-wider">
+                      Descripción
+                    </th>
+                    <th className="px-6 py-4 text-center text-xs font-bold text-green-900 uppercase tracking-wider">
+                      Categoría
+                    </th>
+                    <th className="px-6 py-4 text-center text-xs font-bold text-green-900 uppercase tracking-wider">
+                      Etiquetas
+                    </th>
+                    <th className="px-6 py-4 text-center text-xs font-bold text-green-900 uppercase tracking-wider">
+                      Estado
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {tasks.map((task) => (
-                    <tr
-                      key={task.id}
-                      className="hover:bg-green-50 transition-colors duration-200 group"
+                    <tr 
+                      key={task.id} 
+                      className="hover:bg-green-50 transition-colors duration-200 group cursor-pointer"
                     >
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <span className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-green-100 text-green-600 font-semibold text-sm group-hover:bg-green-200 transition-colors">
                           {task.id}
                         </span>
@@ -257,8 +323,8 @@ function TaskList() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 group-hover:text-green-600 transition-colors truncate">
                         {task.title}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">
-                        {task.description || "-"}
+                      <td className="px-6 py-4 text-sm text-gray-600 group-hover:text-gray-800 transition-colors max-w-xs truncate">
+                        {task.description || '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
                         {task.category ? (
@@ -276,42 +342,24 @@ function TaskList() {
                               <span
                                 key={tag.id}
                                 className="px-2 py-1 rounded-full text-white text-xs font-medium shadow-sm"
-                                style={{
-                                  backgroundColor: tag.color || "#6B7280",
-                                }}
+                                style={{ backgroundColor: tag.color || '#6B7280' }}
                               >
                                 {tag.name}
                               </span>
                             ))}
                           </div>
                         ) : (
-                          <span className="text-gray-400 text-sm text-center block">
-                            -
-                          </span>
+                          <span className="text-gray-400 text-sm">-</span>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <span
-                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold ${task.is_completed ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}
-                        >
-                          {task.is_completed ? "✓ Completada" : "⏳ Pendiente"}
+                        <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold ${
+                          task.is_completed 
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-yellow-100 text-yellow-700'
+                        }`}>
+                          {task.is_completed ? '✓ Completada' : '⏳ Pendiente'}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            onClick={() => handleView(task)}
-                            className="inline-flex items-center px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-1"
-                          >
-                            👁️ Ver
-                          </button>
-                          <button
-                            onClick={() => handleEdit(task)}
-                            className="inline-flex items-center px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1"
-                          >
-                            ✏️ Editar
-                          </button>
-                        </div>
                       </td>
                     </tr>
                   ))}
@@ -320,12 +368,18 @@ function TaskList() {
             </div>
           )}
         </div>
-
+        {totalItems > 0 && totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+          />
+        )}
         <div className="bg-gray-100 px-8 py-4 border-t border-gray-200">
           <p className="text-sm text-gray-600">
-            Total de{" "}
-            <span className="font-semibold text-gray-800">{tasks.length}</span>{" "}
-            tarea{tasks.length !== 1 ? "s" : ""}
+            Total de <span className="font-semibold text-gray-800">{tasks.length}</span> tarea{tasks.length !== 1 ? 's' : ''}
           </p>
         </div>
       </div>

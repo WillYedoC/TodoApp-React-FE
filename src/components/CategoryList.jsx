@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { categoryService } from '../services/category.service';
 import CategoryForm from './CategoryForm';
+import Pagination from './Pagination';
 
 function CategoryList() {
   const [categories, setCategories] = useState([]);
@@ -11,16 +12,31 @@ function CategoryList() {
   const [deleteModal, setDeleteModal] = useState({ show: false, categoryId: null, categoryName: '' });
   const [deleting, setDeleting] = useState(false);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
   useEffect(() => {
     loadCategories();
-  }, []);
+  }, [currentPage, itemsPerPage]);
 
   const loadCategories = async () => {
     try {
       setLoading(true);
-      const data = await categoryService.getAll();
-      const categoryList = Array.isArray(data) ? data : data.data || [];
-      setCategories(categoryList);
+      const data = await categoryService.getAll(currentPage, itemsPerPage);
+      
+      if (data.data) {
+        setCategories(data.data);
+        setTotalItems(data.total || 0);
+        setTotalPages(data.last_page || 0);
+        setCurrentPage(data.current_page || 1);
+      } else {
+        const categoryList = Array.isArray(data) ? data : [];
+        setCategories(categoryList);
+        setTotalItems(categoryList.length);
+        setTotalPages(Math.ceil(categoryList.length / itemsPerPage));
+      }
     } catch (error) {
       console.error('Error al cargar categorías:', error);
       alert('Error al cargar las categorías');
@@ -56,9 +72,14 @@ function CategoryList() {
     setDeleting(true);
     try {
       await categoryService.delete(deleteModal.categoryId);
-      setCategories(categories.filter(c => c.id !== deleteModal.categoryId));
       setDeleteModal({ show: false, categoryId: null, categoryName: '' });
       alert('Categoría eliminada exitosamente');
+      
+      await loadCategories();
+      
+      if (categories.length === 1 && currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+      }
     } catch (error) {
       console.error('Error al eliminar categoría:', error);
       alert('Error al eliminar la categoría');
@@ -76,6 +97,16 @@ function CategoryList() {
   const handleFormCancel = () => {
     setShowForm(false);
     setSelectedCategory(null);
+  };
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleItemsPerPageChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1);
   };
 
   if (loading) {
@@ -103,23 +134,50 @@ function CategoryList() {
         <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-8 py-6 flex justify-between items-center">
           <div>
             <h2 className="text-3xl font-bold text-white mb-1">
-              Lista de Categorías
+              📂 Lista de Categorías
             </h2>
+            <p className="text-blue-100 text-sm">
+              {totalItems} categoría{totalItems !== 1 ? 's' : ''} registrada{totalItems !== 1 ? 's' : ''}
+            </p>
           </div>
           <button
             onClick={handleNewCategory}
             className="bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-blue-50 transition-colors shadow-md hover:shadow-lg"
           >
-            Crear Nueva
+            ➕ Crear Nueva
           </button>
         </div>
 
+        <div className="bg-gray-50 border-b border-gray-200 px-8 py-3 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600 font-medium">
+              Mostrar:
+            </label>
+            <select
+              value={itemsPerPage}
+              onChange={handleItemsPerPageChange}
+              className="px-3 py-1 text-black border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+            <span className="text-sm text-gray-600">por página</span>
+          </div>
+          
+          <div className="text-sm text-gray-600">
+            Página <span className="font-semibold text-gray-800">{currentPage}</span> de{' '}
+            <span className="font-semibold text-gray-800">{totalPages || 1}</span>
+          </div>
+        </div>
+
         <div className="p-8">
-          {categories.length === 0 ? (
+          {totalItems === 0 ? (
             <div className="text-center py-12 px-4">
               <div className="text-6xl mb-4">📂</div>
               <p className="text-gray-500 text-lg font-medium mb-2">No hay categorías registradas</p>
-              <p className="text-gray-400 text-sm mb-6">Crea tu primera categoría para comenzar a organizar tus tareas</p>
+              <p className="text-gray-400 text-sm mb-6">Crea tu primera categoría para comenzar</p>
               <button
                 onClick={handleNewCategory}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
@@ -174,7 +232,7 @@ function CategoryList() {
                           onClick={() => handleDeleteClick(category)}
                           className="inline-flex items-center px-3 py-1 text-sm font-medium text-red-600 bg-red-100 rounded-lg hover:bg-red-200 transition-colors"
                         >
-                          🗑️ Eliminar
+                          🗑️Eliminar
                         </button>
                       </td>
                     </tr>
@@ -185,17 +243,20 @@ function CategoryList() {
           )}
         </div>
 
-        <div className="bg-gray-100 px-8 py-4 border-t border-gray-200">
-          <p className="text-sm text-gray-600">
-            <span className="font-semibold text-gray-800">{categories.length}</span> categoría{categories.length !== 1 ? 's' : ''} registrada{categories.length !== 1 ? 's' : ''}
-          </p>
-        </div>
+        {totalItems > 0 && totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+          />
+        )}
       </div>
 
       {showCategory && selectedCategory && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden animate-in">
-
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden">
             <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-6 flex justify-between items-center">
               <h3 className="text-2xl font-bold text-white">Detalles de Categoría</h3>
               <button

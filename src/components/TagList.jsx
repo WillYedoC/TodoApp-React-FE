@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { tagService } from "../services/tag.service";
 import TagForm from "./TagForm";
-import Modal from './modal';
-
+import Modal from "./modal";
+import Pagination from "./Pagination";
 function TagList() {
   const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,17 +15,30 @@ function TagList() {
     tagName: "",
   });
   const [deleting, setDeleting] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
     loadTags();
-  }, []);
+  }, [currentPage, itemsPerPage]);
 
   const loadTags = async () => {
     try {
       setLoading(true);
-      const data = await tagService.getAll();
-      const tagList = Array.isArray(data) ? data : data.data || [];
-      setTags(tagList);
+      const data = await tagService.getAll(currentPage, itemsPerPage);
+      if (data.data) {
+        setTags(data.data);
+        setTotalItems(data.total || 0);
+        setTotalPages(data.last_page || 0);
+        setCurrentPage(data.current_page || 1);
+      } else {
+        const tagList = Array.isArray(data) ? data : data.data || [];
+        setTags(tagList);
+        setTotalItems(tagList.length);
+        setTotalPages(Math.ceil(tagList.length / itemsPerPage));
+      }
     } catch (error) {
       console.error("Error al cargar etiquetas:", error);
       alert("Error al cargar las etiquetas");
@@ -66,6 +79,10 @@ function TagList() {
       setTags(tags.filter((t) => t.id !== deleteModal.tagId));
       setDeleteModal({ show: false, tagId: null, tagName: "" });
       alert("Etiqueta eliminada exitosamente");
+      await loadCategories();
+      if(categories.length === 1 && currentPage > 1) {
+        setCurrentPage(currentPage-1);
+      }
     } catch (error) {
       console.error("Error al eliminar etiqueta:", error);
       alert("Error al eliminar la etiqueta");
@@ -84,7 +101,15 @@ function TagList() {
     setShowForm(false);
     setSelectedTag(null);
   };
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
+  const handleItemsPerPageChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1);
+  };
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-slate-900 to-slate-700">
@@ -99,9 +124,18 @@ function TagList() {
             Por favor espera un momento...
           </p>
           <div className="flex justify-center gap-2">
-            <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: "0s" }}></div>
-            <div className="w-2 h-2 bg-cyan-600 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
+            <div
+              className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"
+              style={{ animationDelay: "0s" }}
+            ></div>
+            <div
+              className="w-2 h-2 bg-cyan-600 rounded-full animate-bounce"
+              style={{ animationDelay: "0.2s" }}
+            ></div>
+            <div
+              className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"
+              style={{ animationDelay: "0.4s" }}
+            ></div>
           </div>
         </div>
       </div>
@@ -144,6 +178,30 @@ function TagList() {
             <span className="text-2xl">➕</span>
             <span>Nueva Etiqueta</span>
           </button>
+        </div>
+
+        <div className="bg-gray-50 border-b border-gray-200 px-8 py-3 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600 font-medium">
+              Mostrar:
+            </label>
+            <select
+              value={itemsPerPage}
+              onChange={handleItemsPerPageChange}
+              className="px-3 py-1 text-black border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+            <span className="text-sm text-gray-600">por página</span>
+          </div>
+          
+          <div className="text-sm text-gray-600">
+            Página <span className="font-semibold text-gray-800">{currentPage}</span> de{' '}
+            <span className="font-semibold text-gray-800">{totalPages || 1}</span>
+          </div>
         </div>
 
         <div className="p-8 bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
@@ -287,6 +345,15 @@ function TagList() {
             </div>
           )}
         </div>
+        {totalItems > 0 && totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+          />
+        )}
       </div>
       {showTag && selectedTag && (
         <Modal isOpen={showTag} onClose={() => setShowTag(false)}>
@@ -353,7 +420,9 @@ function TagList() {
                   <div className="flex items-center gap-2">
                     <span
                       className="inline-block px-4 py-2 rounded-full text-white font-bold text-sm shadow-md"
-                      style={{ backgroundColor: selectedTag?.color || "#6B7280" }}
+                      style={{
+                        backgroundColor: selectedTag?.color || "#6B7280",
+                      }}
                     >
                       {selectedTag?.name}
                     </span>
@@ -362,7 +431,9 @@ function TagList() {
                   <div className="flex items-center gap-2">
                     <span
                       className="inline-block px-3 py-1 rounded-full text-white font-semibold text-xs shadow-sm"
-                      style={{ backgroundColor: selectedTag?.color || "#6B7280" }}
+                      style={{
+                        backgroundColor: selectedTag?.color || "#6B7280",
+                      }}
                     >
                       {selectedTag?.name}
                     </span>
@@ -371,9 +442,13 @@ function TagList() {
                   <div className="flex items-center gap-3">
                     <div
                       className="w-4 h-4 rounded-full shadow-sm"
-                      style={{ backgroundColor: selectedTag?.color || "#6B7280" }}
+                      style={{
+                        backgroundColor: selectedTag?.color || "#6B7280",
+                      }}
                     />
-                    <span className="text-sm text-gray-700">{selectedTag?.name}</span>
+                    <span className="text-sm text-gray-700">
+                      {selectedTag?.name}
+                    </span>
                     <span className="text-xs text-gray-500">Indicador</span>
                   </div>
                 </div>
