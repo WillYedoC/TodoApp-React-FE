@@ -7,7 +7,6 @@ const Navbar = () => {
         <div className="max-w-7xl mx-auto px-6">
           <div className="relative flex items-center justify-between h-16">
             
-            {/* Links izquierda */}
             <div className="flex space-x-4">
               <NavLink
                 to="/Login"
@@ -36,7 +35,6 @@ const Navbar = () => {
               </NavLink>
             </div>
 
-            {/* Título centrado absoluto */}
             <h1 className="absolute left-1/2 transform -translate-x-1/2 text-xl font-bold tracking-widest">
               TODOAPP
             </h1>
@@ -44,7 +42,6 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* Espaciador para que el contenido no quede debajo del navbar */}
       <div className="h-16"></div>
     </>
   );

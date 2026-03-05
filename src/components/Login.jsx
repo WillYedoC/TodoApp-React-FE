@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import API_URL from "../services";
+import { authService } from "../services/auth.service";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -9,30 +9,14 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
     try {
-      const response = await fetch(`${API_URL}/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-      console.log("Respuesta del servidor:", data.access_token);
-
-      if (response.ok) {
-        localStorage.setItem("authToken", data.access_token);
-        navigate("/CategoryList");
-      } else {
-        alert(data.message || "Error al iniciar sesión");
-      }
+      await authService.login(email, password);
+      navigate("/CategoryList");
     } catch (error) {
-      console.error(error);
-      alert("Error de conexión");
+      console.error("Error al iniciar sesión:", error);
+      alert("Error al iniciar sesión: " + error.message);
     }
-  };
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900 px-4">
