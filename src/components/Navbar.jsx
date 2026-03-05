@@ -1,50 +1,68 @@
-import { NavLink } from "react-router-dom";
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from './authContext';
+import { authService } from '../services/auth.service';
 
-const Navbar = () => {
+function Navbar() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
+  };
+
   return (
-    <>
-      <nav className="fixed top-0 left-0 w-full bg-gray-900 text-white shadow-lg z-50">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="relative flex items-center justify-between h-16">
-            
-            <div className="flex space-x-4">
-              <NavLink
-                to="/Login"
-                className={({ isActive }) =>
-                  `px-4 py-2 rounded-lg transition font-medium ${
-                    isActive
-                      ? "bg-blue-600 text-white"
-                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                  }`
-                }
-              >
-                Login
-              </NavLink>
-
-              <NavLink
-                to="/CategoryList"
-                className={({ isActive }) =>
-                  `px-4 py-2 rounded-lg transition font-medium ${
-                    isActive
-                      ? "bg-blue-600 text-white"
-                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                  }`
-                }
+    <nav className="bg-gray-800 border-b border-gray-700">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center">
+            <Link to="/categories" className="text-white text-xl font-bold">
+              TodoList App
+            </Link>
+            <div className="ml-10 flex items-baseline space-x-4">
+              <Link
+                to="/categories"
+                className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
               >
                 Categorías
-              </NavLink>
+              </Link>
+              <Link
+                to="/tags"
+                className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+              >
+                Etiquetas
+              </Link>
+              <Link
+                to="/tasks"
+                className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+              >
+                Tareas
+              </Link>
             </div>
-
-            <h1 className="absolute left-1/2 transform -translate-x-1/2 text-xl font-bold tracking-widest">
-              TODOAPP
-            </h1>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            {user && (
+              <span className="text-gray-300 text-sm">
+                Bienvenido, {user.name || user.email}
+              </span>
+            )}
+            <button
+              onClick={handleLogout}
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition"
+            >
+              Cerrar Sesión
+            </button>
           </div>
         </div>
-      </nav>
-
-      <div className="h-16"></div>
-    </>
+      </div>
+    </nav>
   );
-};
+}
 
 export default Navbar;
