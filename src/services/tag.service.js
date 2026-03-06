@@ -1,16 +1,22 @@
 import API_URL from "./index";
 
 export const tagService = {
-  async getAll() {
-    const response = await fetch(`${API_URL}/tags`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    if (!response.ok) {
-      throw new Error("Error al obtener las etiquetas");
+  async getAll(page = 1, perPage = 10) {
+    try{
+      const response = await fetch(`${API_URL}/tags/?page=${page}&per_page=${perPage}`, {
+        method: "GET",
+        headers:{
+          'Content-Type': 'application/json',
+        }
+      })
+      if (!response.ok) {
+        throw new Error("Error al obtener las etiquetas");
+      }
+      return await response.json();
+    } catch(error){
+      console.error('Error en getAll:',error);
+      throw error
     }
-    return await response.json();
   },
 
   async getOne(id) {

@@ -1,14 +1,23 @@
 import API_URL from './index'
 
 export const tareaService = {
-  async getAll() {
-    const response = await fetch(`${API_URL}/tasks`);
-    if (!response) {
-      throw new Error('Error al obtener las tareas');
+  async getAll(page = 1, perPage = 9, filter = 'all') {
+    try {
+      const response = await fetch(
+        `${API_URL}/tasks?page=${page}&per_page=${perPage}&filter=${filter}`);
+
+      if (!response.ok) {
+        throw new Error('Error al obtener las tareas');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error en getAll:', error);
+      throw error;
     }
-    return await response.json();
   },
   async create(data) {
+    console.log(data);
     const response = await fetch(`${API_URL}/tasks`, {
       method: 'POST',
       headers: {
@@ -35,3 +44,4 @@ export const tareaService = {
     return await response.json();
   }
 }
+export default tareaService;
