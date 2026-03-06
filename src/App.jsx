@@ -1,68 +1,93 @@
-import { useEffect, useState } from 'react';
-import { tareaService } from './services/task.service';
-import CategoryList from './components/CategoryList';
+import { useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { useAuth } from './components/authContext';
+import { setUnauthorizedCallback } from './services/api.interceptor';
+
 import Login from './components/Login';
 import Navbar from './components/Navbar';
+import ProtectedRoute from './components/ProtectedRoute';
+import CategoryList from './components/CategoryList';
+import TagList from './components/TagList';
+import TaskList from './components/TaskList';
+
 import './App.css';
-import { Routes, Route } from "react-router-dom";
-
-
-const API_URL = 'http://localhost:8000/api';
 
 function App() {
-//   const [tasks, setTasks] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const { isAuthenticated, logout } = useAuth();
 
-//   useEffect(() => {
-//     initializeApp();
-//   }, []);
+  useEffect(() => {
+    setUnauthorizedCallback(() => {
+      logout();
+      navigate('/login', { replace: true });
+      alert('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+    });
+  }, [logout, navigate]);
 
-//   const initializeApp = async () => {
-//     try {
-//       setLoading(true);
-//       await fetchTasks();
-//     } catch (err) {
-//       setError('Error al autorizar o cargar las tareas');
-//       console.error(err);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
+  return (
+    <div className="App min-h-screen bg-gray-900">
+      {isAuthenticated && <Navbar />}
 
-// const fetchTasks = async () => {
-//   try {
-//     const data = await tareaService.getAll();
-//     const taskList = Array.isArray(data) ? data : data.data || [];
+      <Routes>
+        <Route 
+          path="/login"
+          element={
+            isAuthenticated ? (
+              <Navigate to="/categories" replace />
+            ) : (
+              <Login />
+            )
+          }
+        />
 
-//     console.log('📋 Tareas obtenidas:', taskList);
-//     setError(null);
-//   } catch (err) {
-//     console.error('Error al cargar las tareas', err);
-//     setError('Error al cargar las tareas');
-//   }
-// };
+        <Route
+          path="/categories"
+          element={
+            <ProtectedRoute>
+              <CategoryList />
+            </ProtectedRoute>
+          }
+        />
 
-//  if (loading) return <div>Cargando...</div>;
-//  if (error) return <div>{error}</div>;
+        <Route
+          path="/tags"
+          element={
+            <ProtectedRoute>
+              <TagList />
+            </ProtectedRoute>
+          }
+        />
 
-return (
-  <div className="App">
-    <p>Revisa la consola para ver las tareas</p>
-    <Navbar/>
-    <Routes>
-      <Route 
-      path="/Login"
-      element={<Login />}
-      />
-      <Route 
-      path='/CategoryList'
-      element={<CategoryList />}
-      />
-    </Routes>
+        <Route
+          path="/tasks"
+          element={
+            <ProtectedRoute>
+              <TaskList />
+            </ProtectedRoute>
+          }
+        />
 
-  </div>
-);
+        <Route 
+          path="/" 
+          element={
+            <Navigate to={isAuthenticated ? "/categories" : "/login"} replace />
+          } 
+        />
+
+        <Route 
+          path="*" 
+          element={
+            <div className="min-h-screen flex items-center justify-center bg-gray-900">
+              <div className="text-center">
+                <h1 className="text-4xl font-bold text-white mb-4">404</h1>
+                <p className="text-gray-400">Página no encontrada</p>
+              </div>
+            </div>
+          } 
+        />
+      </Routes>
+    </div>
+  );
 }
 
 export default App;
